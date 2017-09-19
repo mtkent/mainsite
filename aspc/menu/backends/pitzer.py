@@ -40,8 +40,8 @@ class PitzerBackend(object):
         week = []
         now = datetime.datetime.now().date()
         one_day = datetime.timedelta(days=1)
-        sunday = now - datetime.timedelta(days=now.weekday())
-        date = sunday
+        monday = now - datetime.timedelta(days=now.weekday())
+        date = monday
         for n in range(7):
             week.append(date.isoformat())
             date += one_day

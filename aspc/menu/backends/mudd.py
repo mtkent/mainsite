@@ -1,6 +1,8 @@
 import requests
 import demjson
 from bs4 import BeautifulSoup
+import datetime
+from dateutil import parser
 
 class MuddBackend(object):
     def __init__(self):
@@ -29,6 +31,14 @@ class MuddBackend(object):
         doc = BeautifulSoup(resp.text, "html.parser")
         hours = doc.find_all('div', {'class': 'accordionBody'})[1]
         return hours.span
+    
+    def get_monday(self):
+        """
+        Return datetime object of Monday of week
+        """
+        week = []
+        now = datetime.datetime.now().date()
+        return now - datetime.timedelta(days=now.weekday()) #Monday
 
     def menu(self):
         """
@@ -48,7 +58,14 @@ class MuddBackend(object):
         json_string = "{ menuData : " + json_part[1].strip()[0:-1] + " }"
         #Run it through demjson, which can handle the weird format
         json_obj = demjson.decode(json_string)
+        #Sometimes, the json will have 2+ weeks' menus in it. Check which one
+        #matches the current week.
+        #If the check doesn't work, display whatever week it has available...
         menu_json = json_obj['menuData'][0]['menus'][0]['tabs']
+        for i in range(len(json_obj)):
+            start_date = json_obj['menuData'][i]['startDate']
+            if parser.parse(start_date).date() == self.get_monday():
+                menu_json = json_obj['menuData'][i]['menus'][0]['tabs']
         #Parse contents of 'aData'
         aData = parts[1]
         fooditem_dict = {}
